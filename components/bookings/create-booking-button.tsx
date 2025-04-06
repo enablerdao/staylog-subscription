@@ -17,7 +17,7 @@ function generateBookingCode(length = 8) {
 export default function CreateBookingButton() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createBrowserClient<Database>();
+  const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
   const handleCreateBooking = async () => {
     setLoading(true);
