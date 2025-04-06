@@ -1,12 +1,12 @@
 import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { cookies: () => cookies() } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { Database } from '@/types_db';
 import PropertiesList from '@/components/properties/properties-list';
 
 export default async function Properties() {
-  const supabase = createServerClient<Database>({ cookies });
+  const supabase = createServerClient<Database>({ cookies: () => cookies() });
 
   const {
     data: { session }

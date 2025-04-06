@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { cookies: () => cookies() } from 'next/headers';
 
 export default async function Navbar() {
-  const supabase = createServerClient({ cookies });
+  const supabase = createServerClient({ cookies: () => cookies() });
 
   const {
     data: { session }

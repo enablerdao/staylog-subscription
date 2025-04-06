@@ -1,12 +1,12 @@
 import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { cookies: () => cookies() } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { Database } from '@/types_db';
 import PropertyForm from '@/components/properties/property-form';
 
 export default async function NewProperty() {
-  const supabase = createServerClient<Database>({ cookies });
+  const supabase = createServerClient<Database>({ cookies: () => cookies() });
 
   const {
     data: { session }

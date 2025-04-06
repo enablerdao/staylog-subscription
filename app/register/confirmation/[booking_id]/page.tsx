@@ -1,5 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { cookies: () => cookies() } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { Database } from '@/types_db';
@@ -9,7 +9,7 @@ export default async function RegistrationConfirmation({
 }: {
   params: { booking_id: string };
 }) {
-  const supabase = createServerClient<Database>({ cookies });
+  const supabase = createServerClient<Database>({ cookies: () => cookies() });
 
   const { data: guests } = await supabase
     .from('guests')

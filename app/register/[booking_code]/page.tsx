@@ -1,5 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { cookies: () => cookies() } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { Database } from '@/types_db';
@@ -10,7 +10,7 @@ export default async function RegisterGuest({
 }: {
   params: { booking_code: string };
 }) {
-  const supabase = createServerClient<Database>({ cookies });
+  const supabase = createServerClient<Database>({ cookies: () => cookies() });
 
   // 予約コードから予約情報を取得
   const { data: booking } = await supabase
