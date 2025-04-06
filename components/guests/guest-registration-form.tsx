@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
 import { Database } from '@/types_db';
 
 interface GuestRegistrationFormProps {
@@ -21,10 +20,7 @@ export default function GuestRegistrationForm({ bookingId }: GuestRegistrationFo
   const [idPhoto, setIdPhoto] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
-  );
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -46,29 +42,39 @@ export default function GuestRegistrationForm({ bookingId }: GuestRegistrationFo
 
       // Upload ID photo if provided
       if (idPhoto) {
-        const fileExt = idPhoto.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${bookingId}/${fileName}`;
+        const formData = new FormData();
+        formData.append('file', idPhoto);
+        formData.append('path', `${bookingId}/${idPhoto.name}`);
 
-        const { error: uploadError, data } = await supabase.storage
-          .from('id-photos')
-          .upload(filePath, idPhoto);
+        const uploadResponse = await fetch('/api/upload-storage', {
+          method: 'POST',
+          body: formData,
+        });
 
-        if (uploadError) {
-          throw uploadError;
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload ID photo');
         }
 
-        id_photo_url = data.path;
+        const { path } = await uploadResponse.json();
+        id_photo_url = path;
       }
 
       // Register guest
-      const { error } = await supabase.from('guests').insert({
-        booking_id: bookingId,
-        ...formData,
-        id_photo_url
+      const response = await fetch('/api/create-guest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          booking_id: bookingId,
+          ...formData,
+          id_photo_url,
+        }),
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to register guest');
+      }
 
       // Redirect to confirmation page
       router.push(`/register/confirmation/${bookingId}`);
