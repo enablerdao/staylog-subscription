@@ -1,36 +1,37 @@
-import { createClient } from '@/utils/supabase/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { NextRequest } from 'next/server';
-import { getErrorRedirect, getStatusRedirect } from '@/utils/helpers';
 
-export async function GET(request: NextRequest) {
-  // The `/auth/callback` route is required for the server-side auth flow implemented
-  // by the `@supabase/ssr` package. It exchanges an auth code for the user's session.
+export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
+  const cookieStore = cookies();
 
   if (code) {
-    const supabase = createClient();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
+          },
+          set(name: string, value: string, options: any) {
+            cookieStore.set(name, value, options);
+          },
+          remove(name: string, options: any) {
+            cookieStore.set(name, '', options);
+          },
+        },
+      }
+    );
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (error) {
-      return NextResponse.redirect(
-        getErrorRedirect(
-          `${requestUrl.origin}/signin/forgot_password`,
-          error.name,
-          "Sorry, we weren't able to log you in. Please try again."
-        )
-      );
+    if (!error) {
+      return NextResponse.redirect(`${requestUrl.origin}/signin/update_password`);
     }
   }
 
-  // URL to redirect to after sign in process completes
-  return NextResponse.redirect(
-    getStatusRedirect(
-      `${requestUrl.origin}/signin/update_password`,
-      'You are now signed in.',
-      'Please enter a new password for your account.'
-    )
-  );
+  return NextResponse.redirect(`${requestUrl.origin}/signin/forgot_password`);
 }
