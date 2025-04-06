@@ -1,4 +1,4 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 
@@ -10,7 +10,7 @@ export default async function RegisterGuest({
 }: {
   params: { booking_code: string };
 }) {
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createServerClient<Database>({ cookies });
 
   // 予約コードから予約情報を取得
   const { data: booking } = await supabase

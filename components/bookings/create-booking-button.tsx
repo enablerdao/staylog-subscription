@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 import { Database } from '@/types_db';
 
 function generateBookingCode(length = 8) {
@@ -17,7 +17,7 @@ function generateBookingCode(length = 8) {
 export default function CreateBookingButton() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createBrowserClient<Database>();
 
   const handleCreateBooking = async () => {
     setLoading(true);

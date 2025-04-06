@@ -1,4 +1,4 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -7,7 +7,11 @@ import BookingsList from '@/components/bookings/bookings-list';
 import CreateBookingButton from '@/components/bookings/create-booking-button';
 
 export default async function Bookings() {
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies }
+  );
 
   const {
     data: { session }
