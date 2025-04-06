@@ -9,6 +9,7 @@ export default async function RegistrationConfirmation({
 }: {
   params: { booking_id: string };
 }) {
+  const cookieStore = cookies();
   const supabase = createServerClient<Database>({ cookies: () => cookies() });
 
   const { data: guests } = await supabase

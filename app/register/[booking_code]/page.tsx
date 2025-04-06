@@ -10,6 +10,7 @@ export default async function RegisterGuest({
 }: {
   params: { booking_code: string };
 }) {
+  const cookieStore = cookies();
   const supabase = createServerClient<Database>({ cookies: () => cookies() });
 
   // 予約コードから予約情報を取得

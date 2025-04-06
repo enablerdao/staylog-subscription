@@ -6,6 +6,7 @@ import { Database } from '@/types_db';
 import PropertiesList from '@/components/properties/properties-list';
 
 export default async function Properties() {
+  const cookieStore = cookies();
   const supabase = createServerClient<Database>({ cookies: () => cookies() });
 
   const {

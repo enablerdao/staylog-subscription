@@ -6,6 +6,7 @@ import { Database } from '@/types_db';
 import PropertyForm from '@/components/properties/property-form';
 
 export default async function NewProperty() {
+  const cookieStore = cookies();
   const supabase = createServerClient<Database>({ cookies: () => cookies() });
 
   const {

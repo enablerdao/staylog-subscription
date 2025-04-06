@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export default async function Navbar() {
+  const cookieStore = cookies();
   const supabase = createServerClient({ cookies: () => cookies() });
 
   const {
