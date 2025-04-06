@@ -6,8 +6,8 @@ import { PropsWithChildren, Suspense } from 'react';
 import { getURL } from '@/utils/helpers';
 import 'styles/main.css';
 
-const title = 'Next.js Subscription Starter';
-const description = 'Brought to you by Vercel, Stripe, and Supabase.';
+const title = 'StayLog - Guest Registration System';
+const description = 'A simple and secure guest registration system for accommodations.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(getURL()),
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en">
-      <body className="bg-black">
+      <body className="bg-white">
         <Navbar />
         <main
           id="skip"
