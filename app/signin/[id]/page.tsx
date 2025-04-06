@@ -1,6 +1,6 @@
 import Logo from '@/components/icons/Logo';
 import { createClient } from '@/utils/supabase/server';
-import { cookies: () => cookies() } from 'next/headers';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import {
   getAuthTypes,
