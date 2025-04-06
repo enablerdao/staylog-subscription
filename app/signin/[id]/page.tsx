@@ -1,112 +1,130 @@
-import Logo from '@/components/icons/Logo';
-import { createClient } from '@/utils/supabase/server';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import {
-  getAuthTypes,
-  getViewTypes,
-  getDefaultSignInView,
-  getRedirectMethod
-} from '@/utils/auth-helpers/settings';
-import Card from '@/components/ui/Card';
-import PasswordSignIn from '@/components/ui/AuthForms/PasswordSignIn';
-import EmailSignIn from '@/components/ui/AuthForms/EmailSignIn';
-import Separator from '@/components/ui/AuthForms/Separator';
-import OauthSignIn from '@/components/ui/AuthForms/OauthSignIn';
-import ForgotPassword from '@/components/ui/AuthForms/ForgotPassword';
-import UpdatePassword from '@/components/ui/AuthForms/UpdatePassword';
-import SignUp from '@/components/ui/AuthForms/Signup';
 
-export default async function SignIn({
-  params,
-  searchParams
+export default async function SignInPage({
+  params: { id }
 }: {
   params: { id: string };
-  searchParams: { disable_button: boolean };
 }) {
-  const { allowOauth, allowEmail, allowPassword } = getAuthTypes();
-  const viewTypes = getViewTypes();
-  const redirectMethod = getRedirectMethod();
-
-  // Declare 'viewProp' and initialize with the default value
-  let viewProp: string;
-
-  // Assign url id to 'viewProp' if it's a valid string and ViewTypes includes it
-  if (typeof params.id === 'string' && viewTypes.includes(params.id)) {
-    viewProp = params.id;
-  } else {
-    const preferredSignInView =
-      cookies().get('preferredSignInView')?.value || null;
-    viewProp = getDefaultSignInView(preferredSignInView);
-    return redirect(`/signin/${viewProp}`);
-  }
-
-  // Check if the user is already logged in and redirect to the account page if so
-  const supabase = createClient();
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set(name, value, options);
+        },
+        remove(name: string, options: any) {
+          cookieStore.set(name, '', options);
+        },
+      },
+    }
+  );
 
   const {
-    data: { user }
-  } = await supabase.auth.getUser();
+    data: { session }
+  } = await supabase.auth.getSession();
 
-  if (user && viewProp !== 'update_password') {
-    return redirect('/');
-  } else if (!user && viewProp === 'update_password') {
-    return redirect('/signin');
+  if (session) {
+    return redirect('/bookings');
   }
 
-  return (
-    <div className="flex justify-center height-screen-helper">
-      <div className="flex flex-col justify-between max-w-lg p-3 m-auto w-80 ">
-        <div className="flex justify-center pb-12 ">
-          <Logo width="64px" height="64px" />
+  if (id === 'forgot_password') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen py-12 bg-gray-50">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Reset your password
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Enter your email address and we'll send you a link to reset your password.
+            </p>
+          </div>
+          <form
+            className="mt-8 space-y-6"
+            action="/auth/reset_password"
+            method="post"
+          >
+            <div>
+              <label htmlFor="email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
+                placeholder="Email address"
+              />
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+              >
+                Send reset link
+              </button>
+            </div>
+          </form>
         </div>
-        <Card
-          title={
-            viewProp === 'forgot_password'
-              ? 'Reset Password'
-              : viewProp === 'update_password'
-                ? 'Update Password'
-                : viewProp === 'signup'
-                  ? 'Sign Up'
-                  : 'Sign In'
-          }
-        >
-          {viewProp === 'password_signin' && (
-            <PasswordSignIn
-              allowEmail={allowEmail}
-              redirectMethod={redirectMethod}
-            />
-          )}
-          {viewProp === 'email_signin' && (
-            <EmailSignIn
-              allowPassword={allowPassword}
-              redirectMethod={redirectMethod}
-              disableButton={searchParams.disable_button}
-            />
-          )}
-          {viewProp === 'forgot_password' && (
-            <ForgotPassword
-              allowEmail={allowEmail}
-              redirectMethod={redirectMethod}
-              disableButton={searchParams.disable_button}
-            />
-          )}
-          {viewProp === 'update_password' && (
-            <UpdatePassword redirectMethod={redirectMethod} />
-          )}
-          {viewProp === 'signup' && (
-            <SignUp allowEmail={allowEmail} redirectMethod={redirectMethod} />
-          )}
-          {viewProp !== 'update_password' &&
-            viewProp !== 'signup' &&
-            allowOauth && (
-              <>
-                <Separator text="Third-party sign-in" />
-                <OauthSignIn />
-              </>
-            )}
-        </Card>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (id === 'update_password') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen py-12 bg-gray-50">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Update your password
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Enter your new password below.
+            </p>
+          </div>
+          <form
+            className="mt-8 space-y-6"
+            action="/auth/update_password"
+            method="post"
+          >
+            <div>
+              <label htmlFor="password" className="sr-only">
+                New password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
+                placeholder="New password"
+              />
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+              >
+                Update password
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  return redirect('/signin');
 }
