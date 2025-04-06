@@ -8,7 +8,6 @@ import CreateBookingButton from '@/components/bookings/create-booking-button';
 
 export default async function Bookings() {
   const cookieStore = cookies();
-  const cookieStore = cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
