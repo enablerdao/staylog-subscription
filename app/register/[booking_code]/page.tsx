@@ -11,7 +11,23 @@ export default async function RegisterGuest({
   params: { booking_code: string };
 }) {
   const cookieStore = cookies();
-  const supabase = createServerClient<Database>({ cookies: () => cookies() });
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set(name, value, options);
+        },
+        remove(name: string, options: any) {
+          cookieStore.set(name, '', options);
+        },
+      },
+    }
+  );
 
   // 予約コードから予約情報を取得
   const { data: booking } = await supabase
